@@ -7,9 +7,9 @@ const bcrypt = require('bcrypt'); // Use bcrypt, not bcrypt-nodejs
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.DB); // useNewUrlParser and useUnifiedTopology are no longer needed
-    console.log("users.js PHAM-HW3 Connected to MongoDB");
+    console.log("users.js PHAM-HW4 Connected to MongoDB");
   } catch (error) {
-    console.error("users.js PHAM-HW3 MongoDB Connection Error:", error); // Log the actual error object
+    console.error("users.js PHAM-HW4 MongoDB Connection Error:", error); // Log the actual error object
     process.exit(1); // Exit the process if the connection fails (optional, but good practice)
   }
 };
