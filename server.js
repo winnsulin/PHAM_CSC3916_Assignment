@@ -97,15 +97,36 @@ router.route('/movies')
 // Single movie operations
 // Single movie operations by title
 router.route('/movies/:title')
+  router.route('/movies')
   .get(authJwtController.isAuthenticated, async (req, res) => {
     try {
-      const movie = await Movie.findOne({ title: req.params.title });
-      if (!movie) return res.status(404).json({ success: false, msg: 'Movie not found' });
-      res.status(200).json(movie);
+
+      // ✅ If reviews=true → aggregation
+      if (req.query.reviews === 'true') {
+
+        const moviesWithReviews = await Movie.aggregate([
+          {
+            $lookup: {
+              from: 'reviews',          // collection name in MongoDB (lowercase plural!)
+              localField: '_id',        // Movie._id
+              foreignField: 'movieId',  // Review.movieId
+              as: 'reviews'             // new field added
+            }
+          }
+        ]);
+
+        return res.json(moviesWithReviews);
+      }
+
+      // case no reviews yet
+      const movies = await Movie.find();
+      res.json(movies);
+
     } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
+      res.status(500).json({ error: err.message });
     }
   })
+  
   .put(authJwtController.isAuthenticated, async (req, res) => {
     try {
       const updatedMovie = await Movie.findOneAndUpdate(

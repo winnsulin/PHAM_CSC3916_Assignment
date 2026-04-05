@@ -46,7 +46,7 @@ router.post(
 
       await newReview.save();
 
-      res.json({ message: 'K thx.' });
+      res.json({ message: 'Reviews created!' });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
