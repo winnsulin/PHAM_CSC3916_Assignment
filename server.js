@@ -129,6 +129,10 @@ router.route('/movies/:title')
     }
   });
 
+// Reivews router
+var reviewsRouter = require('./routes/reviews');
+app.use('/api/reviews', reviewsRouter);
+
 // Use router
 app.use('/', router);
 
