@@ -1,72 +1,30 @@
-/*Step 2: Route for adding API Reviews.js*/
-/*routes/reviews.js*/
-
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 
-// require the Review model
+// Import models
 var Review = require('../Reviews');
+var Movie = require('../Movies');
+
 /**
- * GET all reviews for all movies
-Movies (ALL + aggregation) */
-
-router.get('/movies', authJwtController.isAuthenticated, async (req, res) => {
+ * GET all reviews */
+router.get('/', async (req, res) => {
   try {
-    if (req.query.reviews === 'true') {
-      const moviesWithReviews = await Movie.aggregate([
-        {
-          $lookup: {
-            from: 'reviews',
-            localField: '_id',
-            foreignField: 'movieId',
-            as: 'reviews'
-          }
-        }
-      ]);
+    let filter = {};
 
-      return res.json(moviesWithReviews);
+    // GET all reviews by movieId
+    if (req.query.movieId) {
+      filter.movieId = req.query.movieId;
     }
 
-    const movies = await Movie.find();
-    res.json(movies);
+    const reviews = await Review.find(filter).populate('movieId');
+    res.json(reviews);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-/* GET Reviews for individual movies*/
-// Single movie (by title)
-router.route('/movies/:title')
-  .get(authJwtController.isAuthenticated, async (req, res) => {
-    try {
-      const movie = await Movie.findOne({ title: req.params.title });
-      if (!movie) return res.status(404).json({ msg: 'Movie not found' });
-      res.json(movie);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  })
-  .put(authJwtController.isAuthenticated, async (req, res) => {
-    try {
-      const updatedMovie = await Movie.findOneAndUpdate(
-        { title: req.params.title },
-        req.body,
-        { new: true }
-      );
-      res.json(updatedMovie);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  })
-  .delete(authJwtController.isAuthenticated, async (req, res) => {
-    try {
-      await Movie.findOneAndDelete({ title: req.params.title });
-      res.json({ msg: 'Movie deleted' });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  });
+
 /**
  * POST create a review (JWT protected)
  */
@@ -86,7 +44,8 @@ router.post(
 
       await newReview.save();
 
-      res.json({ message: 'Reviews created!' });
+      res.json({ message: 'Review created!' });
+
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -94,7 +53,7 @@ router.post(
 );
 
 /**
- * OPTIONAL: DELETE a review
+ * DELETE a review
  */
 router.delete(
   '/:id',
@@ -103,6 +62,7 @@ router.delete(
     try {
       await Review.findByIdAndDelete(req.params.id);
       res.json({ message: 'Review deleted!' });
+
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
